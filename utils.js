@@ -1,63 +1,64 @@
-const sqlite3 = require("sqlite3").verbose()
-const db = new sqlite3.Database("./db/app.db")
+const { UrlShortener } = require('./models');
+const redis = require('redis');
 
-db.run(`
-        CREATE TABLE IF NOT EXISTS data(
-        id TEXT,
-        url TEXT
-        ) STRICT
-`)
+const redisClient = redis.createClient();
+redisClient.on('error', err => console.log('Redis Client Error', err));
+redisClient.connect();
+
 
 function makeID(length) {
-  let result = ""
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-  const charactersLength = characters.length
-  let counter = 0
-  while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength))
-    counter += 1
-  }
-  return result
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
+    }
+    return result;
 }
 
-function findOrigin(id) {
-  return new Promise((resolve, reject) => {
-    return db.get(`SELECT * FROM data WHERE id = ?`, [id], function (err, res) {
-      if (err) {
-        return reject(err.message)
-      }
-      if (res != undefined) {
-        return resolve(res.url)
-      } else {
-        return resolve(null)
-      }
-    })
-  })
-}
+async function findOrigin(id) {
+    try {
+        // Check Redis first
+        const cached = await redisClient.get(id);
+        if (cached != null) {
+            console.log("Cache hit");
+            return cached;
+        }
+        console.log("Cache miss");
 
-function create(id, url) {
-  return new Promise((resolve, reject) => {
-    return db.run(`INSERT INTO data VALUES (?, ?)`, [id, url], function (err) {
-      if (err) {
-        return reject(err.message)
-      }
-      return resolve(id)
-    })
-  })
+        const record = await UrlShortener.findOne({ where: { id: id } });
+        if (record) {
+            await redisClient.set(id, record.url, { EX: 43200 });
+            return record.url;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error('Error finding original URL:', err);
+        return null;
+    }
 }
 
 async function shortUrl(url) {
-  while (true) {
-    let newID = makeID(5)
-    let originUrl = await findOrigin(newID)
-    if (originUrl == null);
-    await create(newID, url)
-    return newID
-  }
+    let originUrl = await UrlShortener.findOne({ where: { url: url } });
+    if (originUrl) {
+        console.log('URL already exists:');
+        return originUrl.id;
+    }
+    let newID = makeID(5);
+    try {
+        await UrlShortener.create({ id: newID, url: url });
+        await redisClient.set(newID, url, { EX: 43200 });
+        return newID;
+    } catch (err) {
+        console.error('Error creating shortened URL:', err);
+        throw err;
+    }
 }
 
 module.exports = {
-  findOrigin,
-  shortUrl,
+    findOrigin,
+    shortUrl
 }
