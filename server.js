@@ -1,7 +1,10 @@
 const express = require('express')
+const cors = require('cors')
 const lib = require('./utils')
 const app = express()
 const port = 3000
+
+app.use(cors());
 
 app.get('/short/:id', async (req, res) => {
     try {
@@ -18,7 +21,17 @@ app.get('/short/:id', async (req, res) => {
     }
 })
 
+app.get('/list', async (req, res) => {
+    try {
+        const records = await lib.getAllUrls();
+        res.json(records);
+    } catch (err) {
+        res.status(500).send("Error retrieving URLs");
+    }
+});
+
 app.post('/create', async (req, res) => {
+    timer = Date.now();
     try {
         const url = req.query.url;
         const newID = await lib.shortUrl(url);

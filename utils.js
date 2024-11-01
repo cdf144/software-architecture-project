@@ -42,6 +42,7 @@ async function findOrigin(id) {
 }
 
 async function shortUrl(url) {
+
     let originUrl = await UrlShortener.findOne({ where: { url: url } });
     if (originUrl) {
         console.log('URL already exists:');
@@ -58,7 +59,20 @@ async function shortUrl(url) {
     }
 }
 
+async function getAllUrls() {
+    try {
+        const records = await UrlShortener.findAll({
+            attributes: ['id', 'url'],
+        });
+        return records.map(record => record.get({ plain: true }));
+    } catch (err) {
+        console.error("Error fetching URLs:", err);
+        throw err;
+    }
+}
+
 module.exports = {
     findOrigin,
-    shortUrl
+    shortUrl,
+    getAllUrls
 }
