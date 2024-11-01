@@ -2,6 +2,8 @@ const express = require("express");
 const lib = require("./utils");
 const app = express();
 const port = 3000;
+const Queue = require("bull");
+const myQueue = new Queue("myQueue", "redis://localhost:6379");
 
 app.get("/short/:id", async (req, res) => {
   try {
@@ -20,10 +22,21 @@ app.get("/short/:id", async (req, res) => {
 app.post("/create", async (req, res) => {
   try {
     const url = req.query.url;
-    const newID = await lib.shortUrl(url);
+    const job = await myQueue.add({ url });
+    const newID = await job.finished();
     res.send(newID);
   } catch (err) {
     res.send(err);
+  }
+});
+
+myQueue.process(async (job) => {
+  const { url } = job.data;
+  try {
+    const newId = await lib.shortUrl(url);
+    return newId;
+  } catch (err) {
+    throw err;
   }
 });
 
