@@ -12,11 +12,14 @@ async function shortenUrl() {
             method: 'POST',
         });
 
-        if (!response.ok) throw new Error("Failed to shorten URL.");
+        if (!response.ok) {
+            let message = `An error has occured: ${await response.text()}`;
+            throw new Error(message);
+        };
 
         const shortenedID = await response.json();
         resultDiv.innerHTML = `Shortened URL: <a href="${shortenedID.original_url}" target="_blank">${shortenedID.shortened_url}</a>`;
     } catch (error) {
-        resultDiv.innerHTML = "Error: " + error.message;
+        resultDiv.innerHTML = error.message;
     }
 }

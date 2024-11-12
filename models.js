@@ -1,11 +1,34 @@
+require('dotenv').config();
+const { PostgresDialect } = require('@sequelize/postgres');
 const { Sequelize, DataTypes } = require('sequelize');
 
 const sequelize = new Sequelize(
+    process.env.PGDATABASE, 
+    process.env.PGUSER, 
+    process.env.PGPASSWORD, 
     {
-        dialect: 'sqlite',
-        storage: 'db/app.db'
-    }
+        host: process.env.PGHOST,
+        dialect: 'postgres',
+        port: process.env.PGPORT,
+    },
 );
+
+// const sequelize = new Sequelize(
+//     {
+//         dialect: 'sqlite',
+//         storage: 'db/app.db',
+//     }
+// )
+
+// const sequelize = new Sequelize({
+//     dialect: 'postgres',
+//     username: process.env.PGUSER,
+//     host: process.env.PGHOST,
+//     port: 5432,
+//     password: process.env.PGPASSWORD,
+//     database: process.env.POSTGRES_DB,
+// });
+
 
 const UrlShortener = sequelize.define('UrlShortener', {
     id: {

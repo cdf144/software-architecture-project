@@ -1,10 +1,19 @@
 const express = require('express')
+const rateLimit = require('express-rate-limit')
 const cors = require('cors')
 const lib = require('./utils')
 const app = express()
 const port = 3000
 
 app.use(cors());
+
+const limiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    limit: 5, // limit each IP to 2 requests per windowMs
+    message: "Too many requests",
+});
+
+app.use(limiter);
 
 app.get('/short/:id', async (req, res) => {
     try {
