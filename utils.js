@@ -5,7 +5,7 @@ const redisClient = redis.createClient();
 redisClient.on("error", (err) => console.log("Redis Client Error", err));
 redisClient.connect();
 
-function makeID(length) {
+async function makeID(length) {
   while (true) {
     let result = "";
     const characters =
@@ -16,7 +16,7 @@ function makeID(length) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
       counter += 1;
     }
-    if (UrlShortener.findOne({ where: { id: id } }) !== null) {
+    if ((await UrlShortener.findOne({ where: { id: result } })) == null) {
       return result;
     }
   }
@@ -51,17 +51,17 @@ async function shortUrl(url) {
   if (!originUrl.id) {
     console.log("Cache miss!");
     originUrl = await UrlShortener.findOne({ where: { url: url } });
-    await redisClient.hSet("id to url", originUrl.id, url, { EX: 43200 });
-    await redisClient.hSet("url to id", url, originUrl.id, { EX: 43200 });
   } else {
     console.log("Cache hit!");
   }
   if (originUrl) {
-    console.log("URL already exists:");
+    console.log("URL already exists");
+    await redisClient.hSet("id to url", originUrl.id, url, { EX: 43200 });
+    await redisClient.hSet("url to id", url, originUrl.id, { EX: 43200 });
     return originUrl.id;
   }
 
-  let newID = makeID(5);
+  let newID = await makeID(5);
   try {
     await UrlShortener.create({ id: newID, url: url });
     await redisClient.hSet("id to url", newID, url, { EX: 43200 });
