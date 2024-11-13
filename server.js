@@ -1,7 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const lib = require("./utils");
 const app = express();
-const port = 3000;
+const port = process.env.SERVER_PORT || 3000;
 const Queue = require("bull");
 const myQueue = new Queue("myQueue", "redis://localhost:6379");
 const rateLimit = require("express-rate-limit");
