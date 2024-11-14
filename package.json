@@ -6,7 +6,12 @@
   "scripts": {
     "start:backend": "node server.js",
     "start:frontend": "dotenv -e .env -- cross-env-shell 'http-server -p $CLIENT_PORT'",
-    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\""
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "sequelize": "npx sequelize-cli",
+    "sequelize:migrate": "npm run sequelize db:migrate",
+    "sequelize:migrate:undo": "npm run sequelize db:migrate:undo",
+    "sequelize:seed": "npm run sequelize db:seed:all",
+    "sequelize:seed:undo": "npm run sequelize db:seed:undo:all"
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +32,7 @@
     "dotenv-cli": "^7.4.2",
     "eslint": "^9.13.0",
     "globals": "^15.11.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "sequelize-cli": "^6.6.2"
   }
 }
