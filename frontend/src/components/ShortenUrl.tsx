@@ -22,8 +22,18 @@ function ShortenUrl() {
     )
       .then((res) => res.json())
       .then((data) => {
-        (document.getElementById("shortened") as HTMLInputElement).value =
-          data.shortened_url;
+        const shortenedContainer = document.getElementById(
+          "shortened",
+        )! as HTMLDivElement;
+
+        const link = shortenedContainer.querySelector(
+          "a",
+        )! as HTMLAnchorElement;
+        link.href = data.original_url;
+        link.textContent = data.shortened_url;
+        link.target = "_blank"; // Open the link in a new tab
+
+        shortenedContainer.appendChild(link);
       })
       .catch((err) => console.error(err));
 
@@ -31,7 +41,7 @@ function ShortenUrl() {
   };
 
   return (
-    <div className="w-fit p-6 rounded-xl shadow-xl bg-zinc-600/20">
+    <div className="w-fit p-6 rounded-xl shadow-xl bg-zinc-500/20">
       <h1 className="mx-auto my-4 text-center text-3xl font-bold">
         URL Shortener
       </h1>
@@ -53,13 +63,15 @@ function ShortenUrl() {
       </form>
 
       <div className="mx-auto my-4 max-w-3xl flex justify-items-center">
-        <input
+        <div
           id="shortened"
-          className="mx-4 my-auto w-full h-12 p-4 rounded-lg border border-gray-400/20 outline-none hover:border-[#646cff]/65 hover:shadow-sm focus:border-[#646cff] transition duration-300 font-medium"
-          type="text"
-          placeholder="Shortened URL"
-          readOnly
-        />
+          className="mx-4 my-auto w-full h-12 p-4 rounded-lg border-2 border-gray-400/50 outline-none hover:border-[#646cff]/65 hover:shadow-sm focus:border-[#646cff] transition duration-300 font-medium flex items-center"
+        >
+          <span className="mr-2">
+            <strong>Shortened URL:</strong>
+          </span>
+          <a href=""></a>
+        </div>
       </div>
     </div>
   );
