@@ -13,13 +13,9 @@ function ShortenUrl() {
       return;
     }
 
-    const encodedUrl = encodeURIComponent(
-      (document.getElementById("url") as HTMLInputElement).value,
-    );
-
     fetch(
       "http://localhost:3000/create?" +
-        new URLSearchParams({ url: encodedUrl }).toString(),
+        new URLSearchParams({ url: url }).toString(),
       {
         method: "POST",
       },
@@ -35,37 +31,36 @@ function ShortenUrl() {
   };
 
   return (
-    <div>
-      <main>
-        <section>
-          <h1 className="mb-5">URL Shortener</h1>
-          <form className="w-50" onSubmit={onSubmit}>
-            <input
-              id="url"
-              className="w-100 border border-primary p-2 mb-2 fs-3 h-25"
-              type="text"
-              placeholder="http://example.com"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-            <div className="d-grid gap-2 col-6 mx-auto">
-              <button type="submit" className="btn btn-danger m-5">
-                Shorten!
-              </button>
-            </div>
-          </form>
-        </section>
+    <div className="w-fit p-6 rounded-xl shadow-xl bg-zinc-600/20">
+      <h1 className="mx-auto my-4 text-center text-3xl font-bold">
+        URL Shortener
+      </h1>
 
-        <section>
-          <input
-            id="shortened"
-            className="w-50 border border-primary p-2 mb-2 fs-3 h-25"
-            type="text"
-            placeholder="Shortened URL"
-            readOnly
-          />
-        </section>
-      </main>
+      <form className="mx-auto my-8 max-w-3xl flex gap-x-2" onSubmit={onSubmit}>
+        <input
+          id="url"
+          className="w-screen h-12 m-4 p-4 rounded-lg border border-gray-400/20 outline-none hover:border-[#646cff]/65 hover:shadow-sm focus:border-[#646cff] transition duration-300 font-medium"
+          type="text"
+          placeholder="Input URL here. Ex: https://example.com"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+        />
+        <div className="w-fit mx-auto">
+          <button type="submit" className="h-12 m-4">
+            Shorten!
+          </button>
+        </div>
+      </form>
+
+      <div className="mx-auto my-4 max-w-3xl flex justify-items-center">
+        <input
+          id="shortened"
+          className="mx-4 my-auto w-full h-12 p-4 rounded-lg border border-gray-400/20 outline-none hover:border-[#646cff]/65 hover:shadow-sm focus:border-[#646cff] transition duration-300 font-medium"
+          type="text"
+          placeholder="Shortened URL"
+          readOnly
+        />
+      </div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
-import "./App.css";
 import ShortenUrl from "./components/ShortenUrl";
 
 function App() {
   return (
-    <div className="App container mt-5">
+    <div className="container">
       <ShortenUrl />
     </div>
   );
