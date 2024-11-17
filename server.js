@@ -1,14 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const lib = require("./utils");
-const app = express();
 const port = process.env.SERVER_PORT || 3000;
-const Queue = require("bull");
-const myQueue = new Queue("myQueue", "redis://localhost:6379");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
-
-app.use(cors());
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
@@ -16,7 +11,11 @@ const limiter = rateLimit({
   message: "Too many requests",
 });
 
+const app = express();
+app.use(cors());
 app.use(limiter);
+
+const queue = require("./queue");
 
 app.get("/short/:id", async (req, res) => {
   try {
@@ -45,8 +44,9 @@ app.post("/create", async (req, res) => {
   timer = Date.now();
   try {
     const url = req.query.url;
-    const job = await myQueue.add({ url });
-    const newID = await job.finished();
+    const job = await queue.shortenQueue.add("shortenUrl", { url });
+    const newID = await job.waitUntilFinished(queue.shortenQueueEvents);
+
     // res.send(newID);
     res.json({
       id: newID,
@@ -55,16 +55,6 @@ app.post("/create", async (req, res) => {
     });
   } catch (err) {
     res.send(err);
-  }
-});
-
-myQueue.process(async (job) => {
-  const { url } = job.data;
-  try {
-    const newId = await lib.shortUrl(url);
-    return newId;
-  } catch (err) {
-    throw err;
   }
 });
 
