@@ -10,6 +10,10 @@ function ShortenUrl() {
   ) => {
     e.preventDefault();
 
+    if (loading) {
+      return;
+    }
+
     if (!url) {
       alert("Please enter a URL");
       return;
