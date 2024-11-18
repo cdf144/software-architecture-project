@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const express = require("express");
 const lib = require("./utils");
 const port = process.env.SERVER_PORT || 3000;

@@ -1,4 +1,4 @@
-const db = require("./db/models");
+const db = require("db/models");
 const redis = require("redis");
 
 const redisClient = redis.createClient();

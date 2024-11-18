@@ -1,6 +1,5 @@
 const bullmq = require("bullmq");
 const lib = require("./utils");
-const IORedis = require("ioredis");
 
 const shortenQueue = new bullmq.Queue("shortenQueue", {
   connection: { host: "localhost", port: 6379 },
