@@ -19,6 +19,21 @@ function ShortenUrl() {
       return;
     }
 
+    let normalizedUrl = url.trim();
+    try {
+      // Normalize the URL by adding http:// if missing
+      if (!/^https?:\/\//i.test(normalizedUrl)) {
+        normalizedUrl = `http://${normalizedUrl}`;
+      }
+
+      // Validate the URL
+      new URL(normalizedUrl);
+    } catch (err) {
+      alert("Invalid URL. Please enter a valid URL.");
+      console.error(err);
+      return;
+    }
+
     setLoading(true);
 
     fetch(
@@ -37,7 +52,7 @@ function ShortenUrl() {
         const link = shortenedLinkContainer.querySelector(
           "a",
         )! as HTMLAnchorElement;
-        link.href = data.original_url;
+        link.href = normalizedUrl;
         link.textContent = data.shortened_url;
         link.target = "_blank"; // Open the link in a new tab
 
