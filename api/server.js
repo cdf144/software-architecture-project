@@ -7,7 +7,7 @@ const cors = require("cors");
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  limit: 5, // limit each IP to 5 requests per windowMs
+  limit: 60, // limit each IP to 60 requests per windowMs
   message: "Too many requests",
 });
 

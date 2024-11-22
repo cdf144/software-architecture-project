@@ -19,6 +19,18 @@ export class CircuitBreaker {
   // failure count should be reset because the window has passed.
   private firstWindowFailure: number;
 
+  /**
+   * Creates an instance of CircuitBreaker.
+   *
+   * @param failureThreshold - The number of consecutive failures needed to trip
+   *        the circuit.
+   * @param successThreshold - The number of consecutive successes needed to
+   *        reset the circuit.
+   * @param timeout - The time in milliseconds to wait before transitioning from
+   *        OPEN to HALF-OPEN state.
+   * @param failureWindow - The time window in milliseconds for counting
+   *        failures.
+   */
   constructor(
     failureThreshold: number = 3,
     successThreshold: number = 2,
@@ -93,7 +105,8 @@ export class CircuitBreaker {
   }
 
   /**
-   * Starts a timer that sets the circuit state to HALF-OPEN after a specified timeout.
+   * Starts a timer that sets the circuit state to HALF-OPEN after a specified
+   * timeout.
    *
    * - Records the current time as the last failure time.
    * - Clears any existing timer.

@@ -9,7 +9,7 @@ interface ShortenUrlResponse {
   shortened_url: string;
 }
 
-const circuitBreaker = new CircuitBreaker(3, 2, 15 * 1000, 60 * 1000);
+const circuitBreaker = new CircuitBreaker(6, 4, 25 * 1000, 60 * 1000);
 const rateLimiter = new RateLimiter(15, 60 * 1000);
 
 function ShortenUrl() {
