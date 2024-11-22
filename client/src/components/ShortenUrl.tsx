@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { CircuitBreaker, CircuitState } from "../utils/CircuitBreaker";
+import { RateLimiter } from "../utils/RateLimiter";
 import "./custom.css";
 
 interface ShortenUrlResponse {
@@ -9,6 +10,7 @@ interface ShortenUrlResponse {
 }
 
 const circuitBreaker = new CircuitBreaker(3, 2, 15 * 1000, 60 * 1000);
+const rateLimiter = new RateLimiter(15, 60 * 1000);
 
 function ShortenUrl() {
   const [url, setUrl] = useState("");
@@ -25,6 +27,17 @@ function ShortenUrl() {
     }
     if (!url) {
       alert("Please enter a URL");
+      return;
+    }
+
+    try {
+      rateLimiter.call();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
       return;
     }
 
