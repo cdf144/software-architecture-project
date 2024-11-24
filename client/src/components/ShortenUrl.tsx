@@ -17,6 +17,7 @@ function ShortenUrl() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [circuitState, setCircuitState] = useState(CircuitState.CLOSED);
+  const [queryTime, setQueryTime] = useState<number | null>(null);
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (
     e: React.FormEvent<HTMLFormElement>,
@@ -29,6 +30,8 @@ function ShortenUrl() {
       alert("Please enter a URL");
       return;
     }
+
+    setQueryTime(null);
 
     try {
       rateLimiter.call();
@@ -68,14 +71,20 @@ function ShortenUrl() {
         },
       );
       if (!res.ok) {
+        if (res.status === 429) {
+          throw new Error("Too many requests");
+        }
         throw new Error("Failed API call");
       }
       return res.json();
     };
 
+    const startTime = performance.now();
     circuitBreaker
       .call<ShortenUrlResponse>(apiCall)
       .then((data) => {
+        const endTime = performance.now();
+        setQueryTime(endTime - startTime);
         const shortenedLinkContainer = document.getElementById(
           "shortened",
         )! as HTMLDivElement;
@@ -136,6 +145,11 @@ function ShortenUrl() {
       <p className="text-center font-bold mb-8 text-lg">
         Circuit State: {CircuitState[circuitState]}
       </p>
+      {queryTime !== null && (
+        <p className="text-center text-green-500">
+          Query Time: {queryTime.toFixed(2)} ms
+        </p>
+      )}
 
       <div className="mx-auto my-4 max-w-3xl flex">
         <div
