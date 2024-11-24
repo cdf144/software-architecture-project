@@ -1,13 +1,13 @@
 require("dotenv").config({ path: "../.env" });
 const express = require("express");
-const lib = require("./utils");
 const port = process.env.SERVER_PORT || 3000;
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 
+// Throttling
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  limit: 5, // limit each IP to 5 requests per windowMs
+  limit: 60, // limit each IP to 60 requests per windowMs
   message: "Too many requests",
 });
 
@@ -15,12 +15,14 @@ const app = express();
 app.use(cors());
 app.use(limiter);
 
+// Queue-based Load Leveling
 const queue = require("./queue");
 
 app.get("/short/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const url = await lib.findOrigin(id);
+    const job = await queue.findQueue.add("findUrlById", { id });
+    const url = await job.waitUntilFinished(queue.findQueueEvents);
     if (url == null) {
       res.send("<h1>404</h1>");
     } else {
@@ -33,7 +35,8 @@ app.get("/short/:id", async (req, res) => {
 
 app.get("/list", async (req, res) => {
   try {
-    const records = await lib.getAllUrls();
+    const job = await queue.listQueue.add("listUrls");
+    const records = await job.waitUntilFinished(queue.listQueueEvents);
     res.json(records);
   } catch (err) {
     res.status(500).send("Error retrieving URLs");
