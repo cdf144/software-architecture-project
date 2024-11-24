@@ -10,7 +10,7 @@ interface ShortenUrlResponse {
 }
 
 const circuitBreaker = new CircuitBreaker(6, 4, 25 * 1000, 60 * 1000);
-const rateLimiter = new RateLimiter(15, 60 * 1000);
+const rateLimiter = new RateLimiter(8, 60 * 1000);
 
 function ShortenUrl() {
   const [url, setUrl] = useState("");
