@@ -11,13 +11,15 @@ redisClient.connect();
 const commandService = new CommandService(redisClient);
 const queryService = new QueryService(redisClient);
 
+// POST /create
 const shortenQueue = new bullmq.Queue("shortenQueue", {
   connection: { host: "localhost", port: 6379 },
 });
 const shortenQueueEvents = new bullmq.QueueEvents("shortenQueue", {
   connection: { host: "localhost", port: 6379 },
 });
-const shortenWorker = new bullmq.Worker(
+// Competing Consumers with multiple workers
+const shortenWorker1 = new bullmq.Worker(
   "shortenQueue",
   async (job) => {
     const url = job.data.url;
@@ -28,15 +30,56 @@ const shortenWorker = new bullmq.Worker(
     connection: { host: "localhost", port: 6379 },
   },
 );
-shortenWorker.on("completed", (job) => {
+shortenWorker1.on("completed", (job) => {
   console.log(
-    `Shortening URL ${job.data.url} completed. ID: ${job.returnvalue}`,
+    `Worker 1: Shortening URL ${job.data.url} completed. ID: ${job.returnvalue}`,
   );
 });
-shortenWorker.on("failed", (job, err) => {
-  console.log(`Shortening URL ${job.data.url} failed: ${err}`);
+shortenWorker1.on("failed", (job, err) => {
+  console.log(`Worker 1: Shortening URL ${job.data.url} failed: ${err}`);
 });
 
+const shortenWorker2 = new bullmq.Worker(
+  "shortenQueue",
+  async (job) => {
+    const url = job.data.url;
+    const newID = await commandService.shortUrl(url);
+    return newID;
+  },
+  {
+    connection: { host: "localhost", port: 6379 },
+  },
+);
+shortenWorker2.on("completed", (job) => {
+  console.log(
+    `Worker 2: Shortening URL ${job.data.url} completed. ID: ${job.returnvalue}`,
+  );
+});
+shortenWorker2.on("failed", (job, err) => {
+  console.log(`Worker 2: Shortening URL ${job.data.url} failed: ${err}`);
+});
+
+const shortenWorker3 = new bullmq.Worker(
+  "shortenQueue",
+  async (job) => {
+    const url = job.data.url;
+    const newID = await commandService.shortUrl(url);
+    return newID;
+  },
+  {
+    connection: { host: "localhost", port: 6379 },
+  },
+);
+shortenWorker3.on("completed", (job) => {
+  console.log(
+    `Worker 3: Shortening URL ${job.data.url} completed. ID: ${job.returnvalue}`,
+  );
+});
+shortenWorker3.on("failed", (job, err) => {
+  console.log(`Worker 3: Shortening URL ${job.data.url} failed: ${err}`);
+});
+
+// GET /short/:id
 const findQueue = new bullmq.Queue("findQueue", {
   connection: { host: "localhost", port: 6379 },
 });
@@ -55,6 +98,7 @@ const findWorker = new bullmq.Worker(
   },
 );
 
+// GET /list
 const listQueue = new bullmq.Queue("listQueue", {
   connection: { host: "localhost", port: 6379 },
 });
